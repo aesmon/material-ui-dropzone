@@ -65,6 +65,11 @@ class DropzoneArea extends Component{
             dropzoneText: props.dropzoneText
         }
     }
+    componentWillMount(){
+        if(this.props.files){
+            this.setState({fileObjects: this.props.files});
+        }
+    }
     componentWillUnmount(){
         if(this.props.clearOnUnmount){
             this.setState({
@@ -99,6 +104,10 @@ class DropzoneArea extends Component{
                     },() => {
                         if(this.props.onChange){
                             this.props.onChange(_this.state.fileObjects.map(fileObject => fileObject.file));    
+                        }
+                        // return full fileObjects to reuse for existing files preview outside of library
+                        if(this.props.onChangeFull){
+                            this.props.onChangeFull(_this.state.fileObjects);
                         }
                         if(this.props.onDrop){
                             this.props.onDrop(file)
@@ -239,7 +248,9 @@ DropzoneArea.defaultProps = {
     onChange: () => {},
     onDrop: () => {},
     onDropRejected: () => {},
-    onDelete: () => {}
+    onDelete: () => {},
+    onChangeFull: () => {},
+    files: []
 }
 DropzoneArea.propTypes = {
     acceptedFiles: PropTypes.array,
@@ -254,6 +265,8 @@ DropzoneArea.propTypes = {
     onChange: PropTypes.func,
     onDrop: PropTypes.func,
     onDropRejected: PropTypes.func,
-    onDelete: PropTypes.func
+    onDelete: PropTypes.func,
+    onChangeFull: PropTypes.func,
+    files: PropTypes.array,
 }
 export default withStyles(styles)(DropzoneArea)
