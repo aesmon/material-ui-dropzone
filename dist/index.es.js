@@ -10,6 +10,7 @@ import SnackbarContent from '@material-ui/core/SnackbarContent';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Fab from '@material-ui/core/Fab';
+import Typography from '@material-ui/core/Typography';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -1613,7 +1614,9 @@ var styles$3 = {
         color: '#909090'
     },
     dropzoneParagraph: {
-        fontSize: 24
+        color: '#909090',
+        marginBottom: 16,
+        marginTop: 16
     }
 };
 
@@ -1645,7 +1648,7 @@ var DropzoneArea = function (_Component) {
                     }
                     _this2.setState({
                         openSnackBar: true,
-                        snackbarMessage: 'File ' + file.name + ' removed',
+                        snackbarMessage: _this2.props.messages.fileRemoved.replace('%name', file.name),
                         snackbarVariant: 'info'
                     });
                 });
@@ -1674,6 +1677,9 @@ var DropzoneArea = function (_Component) {
             if (this.props.files) {
                 this.setState({ fileObjects: this.props.files });
             }
+            if (this.props.translations) {
+                this.props.messages = _extends$1({}, this.props.messages, this.props.translations);
+            }
         }
     }, {
         key: 'componentWillUnmount',
@@ -1700,11 +1706,13 @@ var DropzoneArea = function (_Component) {
 
             var _this = this;
             if (this.state.fileObjects.length + files.length > this.props.filesLimit) {
+                var msg = this.props.messages.fileLimitExceeded.replace('%limit', this.props.filesLimit);
                 this.setState({
                     openSnackBar: true,
-                    snackbarMessage: 'Maximum allowed number of files exceeded. Only ' + this.props.filesLimit + ' allowed',
+                    snackbarMessage: msg,
                     snackbarVariant: 'error'
                 });
+                this.props.onError([msg]);
             } else {
                 var count = 0;
                 var message = '';
@@ -1726,7 +1734,7 @@ var DropzoneArea = function (_Component) {
                             if (_this3.props.onDrop) {
                                 _this3.props.onDrop(file);
                             }
-                            message += 'File ' + file.name + ' successfully added. ';
+                            message += _this3.props.messages.fileSuccessfullyAdded.replace('%name', file.name);
                             count++; // we cannot rely on the index because this is asynchronous
                             if (count === files.length) {
                                 // display message when the last one fires
@@ -1743,18 +1751,36 @@ var DropzoneArea = function (_Component) {
             }
         }
     }, {
+        key: 'handleError',
+        value: function handleError(rejectedFiles) {
+            var _this4 = this;
+
+            if (this.props.onError) {
+                var messagesBag = [];
+                rejectedFiles.forEach(function (rejectedFile) {
+                    if (!_this4.props.acceptedFiles.includes(rejectedFile.type)) {
+                        messagesBag.push(_this4.props.messages.fileTypeNotSupported);
+                    }
+                    if (rejectedFile.size > _this4.props.maxFileSize) {
+                        messagesBag.push(_this4.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(_this4.props.maxFileSize)));
+                    }
+                });
+                this.props.onError(messagesBag);
+            }
+        }
+    }, {
         key: 'handleDropRejected',
         value: function handleDropRejected(rejectedFiles, evt) {
-            var _this4 = this;
+            var _this5 = this;
 
             var message = '';
             rejectedFiles.forEach(function (rejectedFile) {
-                message = 'File ' + rejectedFile.name + ' was rejected. ';
-                if (!_this4.props.acceptedFiles.includes(rejectedFile.type)) {
-                    message += 'File type not supported. ';
+                message = _this5.props.messages.fileWasRejected.replace('%name', rejectedFile.name);
+                if (!_this5.props.acceptedFiles.includes(rejectedFile.type)) {
+                    message += ' ' + _this5.props.messages.fileTypeNotSupported;
                 }
-                if (rejectedFile.size > _this4.props.maxFileSize) {
-                    message += 'File is too big. Size limit is ' + convertBytesToMbsOrKbs(_this4.props.maxFileSize) + '. ';
+                if (rejectedFile.size > _this5.props.maxFileSize) {
+                    message += ' ' + _this5.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(_this5.props.maxFileSize));
                 }
             });
             if (this.props.onDropRejected) {
@@ -1791,8 +1817,8 @@ var DropzoneArea = function (_Component) {
                         'div',
                         { className: classes.dropzoneTextStyle },
                         React.createElement(
-                            'p',
-                            { className: classnames(classes.dropzoneParagraph, this.props.dropzoneParagraphClass) },
+                            Typography,
+                            { variant: 'h5', className: classnames(classes.dropzoneParagraph, this.props.dropzoneParagraphClass) },
                             this.state.dropzoneText
                         ),
                         React.createElement(CloudUploadIcon, { className: classes.uploadIconSize })
@@ -1859,7 +1885,18 @@ DropzoneArea.defaultProps = {
     onDropRejected: function onDropRejected() {},
     onDelete: function onDelete() {},
     onChangeFull: function onChangeFull() {},
-    files: []
+    onError: function onError() {},
+    files: [],
+
+    // translations
+    messages: {
+        fileTypeNotSupported: "File type not supported.",
+        fileTooBig: "File is too big. Size limit is %limit.",
+        fileLimitExceeded: "Maximum allowed number of files exceeded. Only %limit allowed",
+        fileWasRejected: "File %name was rejected.",
+        fileRemoved: "File %name removed.",
+        fileSuccessfullyAdded: "File %name successfully added."
+    }
 };
 DropzoneArea.propTypes = {
     acceptedFiles: PropTypes.array,
@@ -1876,7 +1913,9 @@ DropzoneArea.propTypes = {
     onDropRejected: PropTypes.func,
     onDelete: PropTypes.func,
     onChangeFull: PropTypes.func,
-    files: PropTypes.array
+    onError: PropTypes.func,
+    files: PropTypes.array,
+    translations: PropTypes.objectOf(PropTypes.string)
 };
 var DropzoneArea$1 = withStyles(styles$3)(DropzoneArea);
 

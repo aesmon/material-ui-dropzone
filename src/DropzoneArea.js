@@ -72,6 +72,9 @@ class DropzoneArea extends Component{
         if(this.props.files){
             this.setState({fileObjects: this.props.files});
         }
+        if(this.props.translations){
+            this.props.messages = {...this.props.messages, ...this.props.translations};
+        }
     }
     componentWillUnmount(){
         if(this.props.clearOnUnmount){
@@ -91,11 +94,13 @@ class DropzoneArea extends Component{
     onDrop(files){
         const _this = this;
         if(this.state.fileObjects.length + files.length > this.props.filesLimit){
+            const msg = this.props.messages.fileLimitExceeded.replace('%limit', this.props.filesLimit)
             this.setState({
                 openSnackBar: true,
-                snackbarMessage: `Maximum allowed number of files exceeded. Only ${this.props.filesLimit} allowed`, 
+                snackbarMessage: msg,
                 snackbarVariant: 'error'
             });
+            this.props.onError([msg]);
         }else{
             var count = 0;
             var message = '';
@@ -115,7 +120,7 @@ class DropzoneArea extends Component{
                         if(this.props.onDrop){
                             this.props.onDrop(file)
                         }
-                        message += `File ${file.name} successfully added. `;
+                        message += this.props.messages.fileSuccessfullyAdded.replace('%name', file.name);
                         count++; // we cannot rely on the index because this is asynchronous
                         if(count === files.length){
                             // display message when the last one fires
@@ -145,20 +150,34 @@ class DropzoneArea extends Component{
             }
             this.setState({
                 openSnackBar: true,
-                snackbarMessage: ('File ' + file.name+ ' removed'),
+                snackbarMessage: this.props.messages.fileRemoved.replace('%name', file.name),
                 snackbarVariant: 'info'
             });
         });
     }
+    handleError(rejectedFiles) {
+        if(this.props.onError){
+            const messagesBag = [];
+            rejectedFiles.forEach((rejectedFile) => {
+                if(!this.props.acceptedFiles.includes(rejectedFile.type)){
+                    messagesBag.push(this.props.messages.fileTypeNotSupported);
+                }
+                if(rejectedFile.size > this.props.maxFileSize){
+                    messagesBag.push(this.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(this.props.maxFileSize)));
+                }
+            });
+            this.props.onError(messagesBag);
+        }
+    }
     handleDropRejected(rejectedFiles, evt) {
         var message = '';
         rejectedFiles.forEach((rejectedFile) => {
-            message = `File ${rejectedFile.name} was rejected. `;
+            message = this.props.messages.fileWasRejected.replace('%name', rejectedFile.name);
             if(!this.props.acceptedFiles.includes(rejectedFile.type)){
-                message += this.props.messageFileTypeNotSupported
+                message += ' '+this.props.messages.fileTypeNotSupported
             }
             if(rejectedFile.size > this.props.maxFileSize){
-                message += 'File is too big. Size limit is ' + convertBytesToMbsOrKbs(this.props.maxFileSize) + '. ';
+                message += ' '+this.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(this.props.maxFileSize));
             }
         });
         if(this.props.onDropRejected){
@@ -253,10 +272,18 @@ DropzoneArea.defaultProps = {
     onDropRejected: () => {},
     onDelete: () => {},
     onChangeFull: () => {},
+    onError: () => {},
     files: [],
 
     // translations
-    messageFileTypeNotSupported: "File type not supported.",
+    messages: {
+        fileTypeNotSupported: "File type not supported.",
+        fileTooBig: "File is too big. Size limit is %limit.",
+        fileLimitExceeded: "Maximum allowed number of files exceeded. Only %limit allowed",
+        fileWasRejected: "File %name was rejected.",
+        fileRemoved: "File %name removed.",
+        fileSuccessfullyAdded: "File %name successfully added."
+    }
 }
 DropzoneArea.propTypes = {
     acceptedFiles: PropTypes.array,
@@ -273,8 +300,8 @@ DropzoneArea.propTypes = {
     onDropRejected: PropTypes.func,
     onDelete: PropTypes.func,
     onChangeFull: PropTypes.func,
+    onError: PropTypes.func,
     files: PropTypes.array,
-
-    messageFileTypeNotSupported: PropTypes.string,
+    translations: PropTypes.objectOf(PropTypes.string),
 }
 export default withStyles(styles)(DropzoneArea)
