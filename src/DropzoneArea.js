@@ -4,6 +4,7 @@ import {withStyles} from '@material-ui/core/styles';
 import Snackbar from '@material-ui/core/Snackbar';  
 import Dropzone from 'react-dropzone';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import Typography  from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import {convertBytesToMbsOrKbs} from './helpers/helpers'
 import SnackbarContentWrapper from './SnackbarContentWrapper';
@@ -49,7 +50,9 @@ const styles = {
         color: '#909090' 
     },
     dropzoneParagraph:{
-        fontSize: 24
+        color: '#909090',
+        marginBottom: 16,
+        marginTop: 16
     }
 }
 
@@ -152,7 +155,7 @@ class DropzoneArea extends Component{
         rejectedFiles.forEach((rejectedFile) => {
             message = `File ${rejectedFile.name} was rejected. `;
             if(!this.props.acceptedFiles.includes(rejectedFile.type)){
-                message += 'File type not supported. '
+                message += this.props.messageFileTypeNotSupported
             }
             if(rejectedFile.size > this.props.maxFileSize){
                 message += 'File is too big. Size limit is ' + convertBytesToMbsOrKbs(this.props.maxFileSize) + '. ';
@@ -188,9 +191,9 @@ class DropzoneArea extends Component{
                     maxSize={this.props.maxFileSize}
                      >
                     <div className={classes.dropzoneTextStyle}>
-                        <p className={classNames(classes.dropzoneParagraph,this.props.dropzoneParagraphClass)}>
+                        <Typography variant="h5" className={classNames(classes.dropzoneParagraph,this.props.dropzoneParagraphClass)}>
                             {this.state.dropzoneText}
-                        </p>
+                        </Typography>
                         <CloudUploadIcon className={classes.uploadIconSize}/>
                     </div>
                     {showPreviewsInDropzone &&
@@ -250,7 +253,10 @@ DropzoneArea.defaultProps = {
     onDropRejected: () => {},
     onDelete: () => {},
     onChangeFull: () => {},
-    files: []
+    files: [],
+
+    // translations
+    messageFileTypeNotSupported: "File type not supported.",
 }
 DropzoneArea.propTypes = {
     acceptedFiles: PropTypes.array,
@@ -268,5 +274,7 @@ DropzoneArea.propTypes = {
     onDelete: PropTypes.func,
     onChangeFull: PropTypes.func,
     files: PropTypes.array,
+
+    messageFileTypeNotSupported: PropTypes.string,
 }
 export default withStyles(styles)(DropzoneArea)
