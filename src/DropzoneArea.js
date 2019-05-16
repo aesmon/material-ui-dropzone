@@ -65,7 +65,8 @@ class DropzoneArea extends Component{
             openSnackBar: false,
             snackbarMessage: '',
             snackbarVariant: 'success',
-            dropzoneText: props.dropzoneText
+            dropzoneText: props.dropzoneText,
+            messages: props.messages,
         }
     }
     componentWillMount(){
@@ -73,7 +74,7 @@ class DropzoneArea extends Component{
             this.setState({fileObjects: this.props.files});
         }
         if(this.props.translations){
-            this.props.messages = {...this.props.messages, ...this.props.translations};
+            this.setState({messages: {...this.props.messages, ...this.props.translations}});
         }
     }
     componentWillUnmount(){
@@ -94,7 +95,7 @@ class DropzoneArea extends Component{
     onDrop(files){
         const _this = this;
         if(this.state.fileObjects.length + files.length > this.props.filesLimit){
-            const msg = this.props.messages.fileLimitExceeded.replace('%limit', this.props.filesLimit)
+            const msg = this.state.messages.fileLimitExceeded.replace('%limit', this.props.filesLimit)
             this.setState({
                 openSnackBar: true,
                 snackbarMessage: msg,
@@ -120,7 +121,7 @@ class DropzoneArea extends Component{
                         if(this.props.onDrop){
                             this.props.onDrop(file)
                         }
-                        message += this.props.messages.fileSuccessfullyAdded.replace('%name', file.name);
+                        message += this.state.messages.fileSuccessfullyAdded.replace('%name', file.name);
                         count++; // we cannot rely on the index because this is asynchronous
                         if(count === files.length){
                             // display message when the last one fires
@@ -150,7 +151,7 @@ class DropzoneArea extends Component{
             }
             this.setState({
                 openSnackBar: true,
-                snackbarMessage: this.props.messages.fileRemoved.replace('%name', file.name),
+                snackbarMessage: this.state.messages.fileRemoved.replace('%name', file.name),
                 snackbarVariant: 'info'
             });
         });
@@ -160,10 +161,10 @@ class DropzoneArea extends Component{
             const messagesBag = [];
             rejectedFiles.forEach((rejectedFile) => {
                 if(!this.props.acceptedFiles.includes(rejectedFile.type)){
-                    messagesBag.push(this.props.messages.fileTypeNotSupported);
+                    messagesBag.push(this.state.messages.fileTypeNotSupported);
                 }
                 if(rejectedFile.size > this.props.maxFileSize){
-                    messagesBag.push(this.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(this.props.maxFileSize)));
+                    messagesBag.push(this.state.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(this.props.maxFileSize)));
                 }
             });
             this.props.onError(messagesBag);
@@ -172,12 +173,12 @@ class DropzoneArea extends Component{
     handleDropRejected(rejectedFiles, evt) {
         var message = '';
         rejectedFiles.forEach((rejectedFile) => {
-            message = this.props.messages.fileWasRejected.replace('%name', rejectedFile.name);
+            message = this.state.messages.fileWasRejected.replace('%name', rejectedFile.name);
             if(!this.props.acceptedFiles.includes(rejectedFile.type)){
-                message += ' '+this.props.messages.fileTypeNotSupported
+                message += ' '+this.state.messages.fileTypeNotSupported
             }
             if(rejectedFile.size > this.props.maxFileSize){
-                message += ' '+this.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(this.props.maxFileSize));
+                message += ' '+this.state.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(this.props.maxFileSize));
             }
         });
         if(this.props.onDropRejected){

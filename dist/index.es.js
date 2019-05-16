@@ -1648,7 +1648,7 @@ var DropzoneArea = function (_Component) {
                     }
                     _this2.setState({
                         openSnackBar: true,
-                        snackbarMessage: _this2.props.messages.fileRemoved.replace('%name', file.name),
+                        snackbarMessage: _this2.state.messages.fileRemoved.replace('%name', file.name),
                         snackbarVariant: 'info'
                     });
                 });
@@ -1666,7 +1666,8 @@ var DropzoneArea = function (_Component) {
             openSnackBar: false,
             snackbarMessage: '',
             snackbarVariant: 'success',
-            dropzoneText: props.dropzoneText
+            dropzoneText: props.dropzoneText,
+            messages: props.messages
         };
         return _this2;
     }
@@ -1678,7 +1679,7 @@ var DropzoneArea = function (_Component) {
                 this.setState({ fileObjects: this.props.files });
             }
             if (this.props.translations) {
-                this.props.messages = _extends$1({}, this.props.messages, this.props.translations);
+                this.setState({ messages: _extends$1({}, this.props.messages, this.props.translations) });
             }
         }
     }, {
@@ -1706,7 +1707,7 @@ var DropzoneArea = function (_Component) {
 
             var _this = this;
             if (this.state.fileObjects.length + files.length > this.props.filesLimit) {
-                var msg = this.props.messages.fileLimitExceeded.replace('%limit', this.props.filesLimit);
+                var msg = this.state.messages.fileLimitExceeded.replace('%limit', this.props.filesLimit);
                 this.setState({
                     openSnackBar: true,
                     snackbarMessage: msg,
@@ -1734,7 +1735,7 @@ var DropzoneArea = function (_Component) {
                             if (_this3.props.onDrop) {
                                 _this3.props.onDrop(file);
                             }
-                            message += _this3.props.messages.fileSuccessfullyAdded.replace('%name', file.name);
+                            message += _this3.state.messages.fileSuccessfullyAdded.replace('%name', file.name);
                             count++; // we cannot rely on the index because this is asynchronous
                             if (count === files.length) {
                                 // display message when the last one fires
@@ -1759,10 +1760,10 @@ var DropzoneArea = function (_Component) {
                 var messagesBag = [];
                 rejectedFiles.forEach(function (rejectedFile) {
                     if (!_this4.props.acceptedFiles.includes(rejectedFile.type)) {
-                        messagesBag.push(_this4.props.messages.fileTypeNotSupported);
+                        messagesBag.push(_this4.state.messages.fileTypeNotSupported);
                     }
                     if (rejectedFile.size > _this4.props.maxFileSize) {
-                        messagesBag.push(_this4.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(_this4.props.maxFileSize)));
+                        messagesBag.push(_this4.state.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(_this4.props.maxFileSize)));
                     }
                 });
                 this.props.onError(messagesBag);
@@ -1775,12 +1776,12 @@ var DropzoneArea = function (_Component) {
 
             var message = '';
             rejectedFiles.forEach(function (rejectedFile) {
-                message = _this5.props.messages.fileWasRejected.replace('%name', rejectedFile.name);
+                message = _this5.state.messages.fileWasRejected.replace('%name', rejectedFile.name);
                 if (!_this5.props.acceptedFiles.includes(rejectedFile.type)) {
-                    message += ' ' + _this5.props.messages.fileTypeNotSupported;
+                    message += ' ' + _this5.state.messages.fileTypeNotSupported;
                 }
                 if (rejectedFile.size > _this5.props.maxFileSize) {
-                    message += ' ' + _this5.props.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(_this5.props.maxFileSize));
+                    message += ' ' + _this5.state.messages.fileTooBig.replace('%limit', convertBytesToMbsOrKbs(_this5.props.maxFileSize));
                 }
             });
             if (this.props.onDropRejected) {
