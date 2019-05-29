@@ -1737,6 +1737,7 @@ var DropzoneArea = function (_Component) {
                             }
                             // return full fileObjects to reuse for existing files preview outside of library
                             if (_this3.props.onChangeFull) {
+                                alert('changeFull');
                                 _this3.props.onChangeFull(_this.state.fileObjects);
                             }
                             if (_this3.props.onDrop) {
