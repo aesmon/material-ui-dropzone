@@ -116,7 +116,6 @@ class DropzoneArea extends Component{
                         }
                         // return full fileObjects to reuse for existing files preview outside of library
                         if(this.props.onChangeFull){
-                            alert('changeFull');
                             this.props.onChangeFull(_this.state.fileObjects);
                         }
                         if(this.props.onDrop){
